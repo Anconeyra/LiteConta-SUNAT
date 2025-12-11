@@ -18,9 +18,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'company_id', // Importante: Agregado para relacionar con la empresa
         'name',
         'email',
         'password',
+        'role',       // Importante: Agregado para definir si es admin o digitador
     ];
 
     /**
@@ -44,5 +46,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* RELACIONES                                 */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * Relación: Un usuario pertenece a una Empresa (Company).
+     * Esto te permitirá usar: Auth::user()->company->razon_social
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }
