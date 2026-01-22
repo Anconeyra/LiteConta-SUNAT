@@ -1,59 +1,178 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📊 MYPE SUNAT Lite  
+### Sistema Web para Clasificación y Pre-registro Contable de MYPEs Peruanas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-## About Laravel
+> **MYPE SUNAT Lite** es una herramienta web ligera que permite a micro y pequeñas empresas (MYPEs) del Perú realizar un **pre-registro contable automatizado** a partir de comprobantes electrónicos (facturas, boletas), facilitando el cumplimiento tributario ante la SUNAT y la generación de reportes compatibles con software contable.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🎯 Características principales
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- ✅ **Subida y parseo automático** de comprobantes electrónicos (XML/ZIP)
+- 🔍 **Clasificación inteligente** de ingresos y gastos según catálogo SUNAT
+- 🛡️ **Validación básica de RUC** (estado activo/inactivo)
+- 📥 **Exportación a CSV** compatible con Contpaqi, SIIGO y otros
+- 📱 **Interfaz responsive** con Blade + Tailwind CSS (compilado con Vite)
+- 🔐 Autenticación segura con Laravel Breeze
+- ☁️ Listo para despliegue en AWS, Railway o cualquier entorno PHP
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Requisitos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2 o superior
+- Composer 2.5+
+- Node.js 18+ y npm
+- PostgreSQL 12+ (o MySQL si prefieres)
+- Extensiones PHP: `xml`, `zip`, `pgsql` (o `pdo_mysql`)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🚀 Instalación local
 
-### Premium Partners
+Sigue estos pasos para ejecutar el proyecto en tu entorno de desarrollo:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/frankanconeyra/mype-sunat-lite.git
+cd mype-sunat-lite
+```
 
-## Contributing
+### 2. Instalar dependencias de PHP
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Instalar dependencias de frontend y compilar assets
+```bash
+npm install
+npm run build
+```
+Para desarrollo en vivo (hot-reload):
+```bash
+npm run dev
+```
 
-## Code of Conduct
+### 4. Configurar variables de entorno
+```bash
+cp .env.example .env
+```
+Edita el archivo `.env` y configura tu base de datos:
+```
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=mype_sunat
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
+💡 Si usas MySQL, cambia a:
+```
+DB_CONNECTION=mysql
+DB_PORT=3306
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 5. Generar clave de aplicación y preparar la base de datos
+```bash
+php artisan key:generate
+php artisan migrate --seed
+```
 
-## Security Vulnerabilities
+### 6. Iniciar servidor de desarrollo
+```bash
+php artisan serve
+```
+Accede a la aplicación en:  
+👉 http://127.0.0.1:8000
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🗂️ Estructura relevante del proyecto
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+app/
+├── Models/               # Transaction.php, Category.php, ...
+├── Http/Controllers/     # XMLParserController.php, ReportController.php, ...
+resources/
+├── views/                # Blade templates (layouts, components, livewire)
+├── js/                   # app.js (punto de entrada Vite)
+routes/
+├── web.php               # Rutas principales
+database/
+├── seeders/              # CategorySeeder.php (códigos y tablas SUNAT)
+```
+
+---
+
+## 🚢 Despliegue en producción
+
+Pasos recomendados:
+```bash
+# Compilar assets optimizados
+npm run build
+
+# Configurar entorno producción
+# (en .env o variables del servidor)
+APP_ENV=production
+APP_DEBUG=false
+LOG_LEVEL=error
+
+# Optimizar Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+Configura tu servidor web (Nginx / Apache) para que apunte a la carpeta `public/`.
+
+**Plataformas compatibles:**
+- AWS EC2 + RDS
+- Railway.app
+- Render.com
+- Laravel Forge
+- DigitalOcean App Platform / Droplets
+- VPS con Nginx + PHP-FPM
+
+---
+
+## 📝 Licencia
+
+Este proyecto está licenciado bajo la MIT License – ver el archivo LICENSE para más detalles.  
+© 2026 Frank Hernán Anconeyra Suyo  
+Proyecto académico para optar al Título Profesional en Diseño y Desarrollo de Software – TECSUP
+
+---
+
+## 🤝 ¿Quieres contribuir?
+
+¡Las contribuciones son bienvenidas!
+
+1. Haz fork del repositorio
+2. Crea tu rama:
+    ```bash
+    git checkout -b feature/nueva-funcionalidad
+    ```
+3. Realiza tus cambios y haz commit:
+    ```bash
+    git commit -m "Agrega nueva funcionalidad"
+    ```
+4. Haz push:
+    ```bash
+    git push origin feature/nueva-funcionalidad
+    ```
+5. Abre un Pull Request
+
+---
+
+## 📬 Contacto
+
+¿Tienes dudas, sugerencias o quieres colaborar?
+
+- 📧 anconeyrafsuyo@gmail.com
+- 👤 [LinkedIn: Frank Hernán Anconeyra](www.linkedin.com/in/frank-anconeyra)
+
+¡Gracias por tu interés en el proyecto!
