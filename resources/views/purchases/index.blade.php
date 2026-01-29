@@ -3,7 +3,7 @@
 @section('header_title', 'Registro de Compras')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="purchaseIndex">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <form action="{{ route('purchases.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
@@ -62,7 +62,7 @@
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center gap-2">
                                 <a href="{{ route('purchases.edit', $doc) }}" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-edit"></i></a>
-                                <button class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button>
+                                <button @click="deleteDocId = {{ $doc->id }}; deleteDocName = '{{ $doc->serie }}-{{ $doc->numero }}'; showDeleteModal = true;" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -74,5 +74,42 @@
             {{ $documents->links() }}
         </div>
     </div>
+
+    <!-- Modal de confirmación de eliminación -->
+    <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Confirmar Eliminación</h3>
+                <button @click="showDeleteModal = false" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar el documento <strong><span x-text="deleteDocName"></span></strong>? Esta acción no se puede deshacer.</p>
+
+            <form :action="'/compras/' + deleteDocId" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-red-600 text-white font-bold py-3.5 rounded-xl hover:bg-red-700 transition shadow-lg shadow-red-100 border border-red-300">
+                        <i class="fas fa-trash mr-2"></i>Eliminar
+                    </button>
+                    <button type="button" @click="showDeleteModal = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 transition">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('purchaseIndex', () => ({
+            showDeleteModal: false,
+            deleteDocId: null,
+            deleteDocName: ''
+        }))
+    })
+</script>
 @endsection

@@ -9,10 +9,10 @@
     </div>
 
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-        
+
         <p class="text-[10px] font-bold text-slate-500 uppercase px-3 mb-2 tracking-widest">Resumen</p>
-        
-        <a href="{{ route('dashboard') }}" 
+
+        <a href="{{ route('dashboard') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('dashboard') ? 'bg-green-500 text-slate-900 font-bold shadow-lg shadow-green-900/20' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-th-large w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Dashboard</span>
@@ -20,12 +20,12 @@
 
         <p class="text-[10px] font-bold text-slate-500 uppercase px-3 mt-6 mb-2 tracking-widest">Operaciones SUNAT</p>
 
-        <a href="{{ route('sales.index') }}" 
+        <a href="{{ route('sales.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('sales.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-file-invoice-dollar w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Mis Ventas</span>
         </a>
-        <a href="{{ route('purchases.index') }}" 
+        <a href="{{ route('purchases.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('purchases.*') ? 'bg-green-500 text-slate-900 font-bold shadow-lg shadow-green-900/20' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-shopping-bag w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Mis Compras</span>
@@ -39,30 +39,44 @@
 
         <p class="text-[10px] font-bold text-slate-500 uppercase px-3 mt-6 mb-2 tracking-widest">Automatización</p>
 
-        <a href="#" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('categories.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+        <a href="{{ route('accounting.categories.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('accounting.categories.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-tags w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Categorías</span>
         </a>
 
-        <a href="#" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('rules.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+        <a href="{{ route('accounting.rules.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('accounting.rules.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-robot w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Reglas Auto.</span>
         </a>
 
         <p class="text-[10px] font-bold text-slate-500 uppercase px-3 mt-6 mb-2 tracking-widest">Sistema</p>
 
-        <a href="#" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('settings.company') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+        <a href="{{ route('settings.company.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('settings.company.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-cog w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Mi Empresa</span>
         </a>
 
-        <a href="#" 
+        <a href="{{ route('compliance-alerts.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('compliance-alerts.index') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+            <i class="fas fa-bell w-5 text-center text-lg"></i>
+            <span class="text-sm tracking-wide">Alertas Cumplimiento</span>
+        </a>
+
+        <a href="{{ route('settings.users.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('settings.users.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-users-cog w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Equipo</span>
+        </a>
+
+        <p class="text-[10px] font-bold text-slate-500 uppercase px-3 mt-6 mb-2 tracking-widest">Reportes</p>
+
+        <a href="{{ route('reports.accountant.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('reports.accountant.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+            <i class="fas fa-file-contract w-5 text-center text-lg"></i>
+            <span class="text-sm tracking-wide">Reporte Contador</span>
         </a>
     </nav>
 

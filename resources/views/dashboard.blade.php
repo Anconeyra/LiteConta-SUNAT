@@ -3,14 +3,14 @@
 @section('header_title', 'Panel de Control - Resumen MYPE')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="dashboard">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
             <div class="flex items-center justify-between relative z-10">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ventas del Mes</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">S/ 12,450.00</h3>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">S/ {{ number_format($totalVentasMes, 2, '.', ',') }}</h3>
                     <p class="text-[10px] text-green-500 font-bold mt-1"><i class="fas fa-arrow-up"></i> +12.5% vs mes anterior</p>
                 </div>
                 <div class="bg-green-100 text-green-600 p-3 rounded-xl group-hover:bg-green-500 group-hover:text-white transition-colors">
@@ -26,7 +26,7 @@
             <div class="flex items-center justify-between relative z-10">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Compras / Gastos</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">S/ 4,200.00</h3>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">S/ {{ number_format($totalComprasMes, 2, '.', ',') }}</h3>
                     <p class="text-[10px] text-slate-400 mt-1 italic">Basado en comprobantes registrados</p>
                 </div>
                 <div class="bg-slate-100 text-slate-600 p-3 rounded-xl group-hover:bg-slate-800 group-hover:text-white transition-colors">
@@ -39,7 +39,7 @@
             <div class="flex items-center justify-between relative z-10">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">IGV x Pagar (Est.)</p>
-                    <h3 class="text-2xl font-black text-blue-600 mt-1">S/ 1,485.00</h3>
+                    <h3 class="text-2xl font-black text-blue-600 mt-1">S/ {{ number_format($igvEstimado, 2, '.', ',') }}</h3>
                     <p class="text-[10px] text-blue-400 font-bold mt-1">Sujeto a validación contable</p>
                 </div>
                 <div class="bg-blue-100 text-blue-600 p-3 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -52,8 +52,13 @@
             <div class="flex items-center justify-between relative z-10">
                 <div>
                     <p class="text-xs font-bold text-green-500 uppercase tracking-wider">Estado Cumplimiento</p>
-                    <h3 class="text-lg font-bold mt-1">Al Día <i class="fas fa-check-circle ml-1"></i></h3>
-                    <p class="text-[10px] text-slate-400 mt-1">Próx. vencimiento: 15 Ene</p>
+                    @if(count($proximasAlertas) > 0)
+                        <h3 class="text-lg font-bold mt-1">Alertas Pendientes <i class="fas fa-exclamation-triangle ml-1"></i></h3>
+                        <p class="text-[10px] text-yellow-400 mt-1">{{ count($proximasAlertas) }} vencimientos próximos</p>
+                    @else
+                        <h3 class="text-lg font-bold mt-1">Al Día <i class="fas fa-check-circle ml-1"></i></h3>
+                        <p class="text-[10px] text-slate-400 mt-1">Sin obligaciones pendientes</p>
+                    @endif
                 </div>
                 <div class="bg-white/10 p-3 rounded-xl">
                     <i class="fas fa-university text-xl text-green-500"></i>
@@ -73,16 +78,22 @@
                     <option>Este año</option>
                 </select>
             </div>
-            <div class="h-64 flex items-end justify-between gap-2 px-4">
-                <div class="w-full bg-slate-100 rounded-t-lg h-[40%] transition-all hover:bg-green-200"></div>
-                <div class="w-full bg-slate-100 rounded-t-lg h-[60%] transition-all hover:bg-green-200"></div>
-                <div class="w-full bg-slate-100 rounded-t-lg h-[45%] transition-all hover:bg-green-200"></div>
-                <div class="w-full bg-green-500 rounded-t-lg h-[85%] transition-all"></div>
-                <div class="w-full bg-slate-100 rounded-t-lg h-[55%] transition-all hover:bg-green-200"></div>
-                <div class="w-full bg-slate-200 rounded-t-lg h-[70%] transition-all hover:bg-green-200"></div>
+            <div class="h-64 flex items-end justify-between gap-1 px-4">
+                <template x-for="dato in (period === '6months' ? datosGrafica.slice(-6) : datosGraficaAnual)" :key="dato.mes">
+                    <div class="flex flex-col items-center w-full">
+                        <div class="w-3/4 bg-slate-100 rounded-t-lg transition-all hover:bg-green-200 relative group"
+                             :style="'height: ' + Math.max(5, Math.min(100, (dato.ventas / Math.max(1, getMaxValue(period))) * 100)) + '%'">
+                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-center text-[8px] font-bold text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                S/ <span x-text="formatNumber(dato.ventas)"></span>
+                            </div>
+                        </div>
+                        <div class="text-[8px] text-slate-500 mt-1 text-center max-w-[60px] truncate" x-text="dato.mes" :title="dato.mes"></div>
+                    </div>
+                </template>
             </div>
             <div class="flex justify-between mt-4 text-[10px] text-slate-400 font-bold uppercase">
-                <span>Ago</span><span>Sep</span><span>Oct</span><span class="text-green-600">Nov</span><span>Dic</span><span>Ene</span>
+                <span x-text="period === '6months' ? 'Últimos 6 meses' : 'Últimos 12 meses'"></span>
+                <span>Total: S/ <span x-text="formatNumber(getTotalValue(period))"></span></span>
             </div>
         </div>
 
@@ -91,38 +102,77 @@
                 <i class="fas fa-bolt mr-2 text-yellow-500"></i> Acceso Directo
             </h3>
             <div class="space-y-3">
-                <button class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
+                <a href="{{ route('purchases.create') }}" class="block w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
                     <div class="flex items-center gap-3 text-sm font-semibold text-slate-700 group-hover:text-green-700">
                         <i class="fas fa-file-upload text-blue-500"></i> Cargar XML (SUNAT)
                     </div>
                     <i class="fas fa-chevron-right text-xs text-slate-300"></i>
-                </button>
-                <button class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
+                </a>
+                <a href="{{ route('sales.create') }}" class="block w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
                     <div class="flex items-center gap-3 text-sm font-semibold text-slate-700 group-hover:text-green-700">
                         <i class="fas fa-plus-circle text-green-500"></i> Registrar Venta
                     </div>
                     <i class="fas fa-chevron-right text-xs text-slate-300"></i>
-                </button>
-                <button class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
+                </a>
+                <a href="{{ route('purchases.create') }}" class="block w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
                     <div class="flex items-center gap-3 text-sm font-semibold text-slate-700 group-hover:text-green-700">
                         <i class="fas fa-minus-circle text-red-500"></i> Registrar Compra
                     </div>
                     <i class="fas fa-chevron-right text-xs text-slate-300"></i>
-                </button>
-                <button class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
+                </a>
+                <a href="{{ route('reports.accountant.index') }}" class="block w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-xl border border-gray-100 group transition-all">
                     <div class="flex items-center gap-3 text-sm font-semibold text-slate-700 group-hover:text-green-700">
-                        <i class="fas fa-file-pdf text-orange-500"></i> Reporte Contador
+                        <i class="fas fa-file-contract text-orange-500"></i> Reporte Contador
                     </div>
                     <i class="fas fa-chevron-right text-xs text-slate-300"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>
 
+    @if(count($proximasAlertas) > 0)
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 flex items-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> Alertas de Cumplimiento
+            </h3>
+            <a href="{{ route('compliance-alerts.index') }}" class="text-xs font-bold text-green-600 hover:underline">Gestionar alertas</a>
+        </div>
+        <div class="divide-y divide-gray-50">
+            @foreach($proximasAlertas as $alerta)
+            <div class="p-6 flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-slate-800">{{ $alerta->title }}</h4>
+                    <p class="text-sm text-slate-600">{{ $alerta->description }}</p>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400">Vence:</span>
+                        <span class="text-xs font-bold text-red-600">{{ \Carbon\Carbon::parse($alerta->alert_date)->format('d/m/Y') }}</span>
+                        @if($alerta->notification_days_before > 0)
+                        <span class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Notificar {{ $alerta->notification_days_before }} días antes</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-bold {{ \Carbon\Carbon::parse($alerta->alert_date)->diffInDays(\Carbon\Carbon::today()) <= 7 ? 'text-red-600' : 'text-slate-400' }}">
+                        @if(\Carbon\Carbon::parse($alerta->alert_date)->isToday())
+                            Hoy
+                        @elseif(\Carbon\Carbon::parse($alerta->alert_date)->isTomorrow())
+                            Mañana
+                        @else
+                            Faltan {{ \Carbon\Carbon::parse($alerta->alert_date)->diffInDays(\Carbon\Carbon::today()) }} días
+                        @endif
+                    </span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-6 border-b border-gray-50 flex items-center justify-between">
             <h3 class="font-bold text-slate-800">Últimos Comprobantes</h3>
-            <a href="#" class="text-xs font-bold text-green-600 hover:underline">Ver todo el registro</a>
+            <a href="{{ route('purchases.index') }}" class="text-xs font-bold text-green-600 hover:underline">Ver todo el registro</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -136,27 +186,51 @@
                     </tr>
                 </thead>
                 <tbody class="text-sm text-slate-600 divide-y divide-gray-50">
+                    @forelse($ultimosDocumentos as $documento)
                     <tr>
-                        <td class="px-6 py-4">07 Ene 2026</td>
-                        <td class="px-6 py-4 font-bold">F001-1254</td>
-                        <td class="px-6 py-4">Servicios Digitales SAC</td>
-                        <td class="px-6 py-4 text-right font-bold text-slate-800">S/ 450.00</td>
+                        <td class="px-6 py-4">{{ $documento->issue_date->format('d M Y') }}</td>
+                        <td class="px-6 py-4 font-bold">{{ $documento->sunatType->code }}-{{ $documento->serie }}-{{ $documento->numero }}</td>
+                        <td class="px-6 py-4">{{ $documento->partner->name ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-slate-800">S/ {{ number_format($documento->total, 2) }}</td>
                         <td class="px-6 py-4 text-center">
-                            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">Validado</span>
+                            <span class="px-2 py-1 bg-{{ $documento->status == 'registrado' ? 'green' : ($documento->status == 'anulado' ? 'red' : 'yellow') }}-100 text-{{ $documento->status == 'registrado' ? 'green' : ($documento->status == 'anulado' ? 'red' : 'yellow') }}-700 text-[10px] font-bold rounded-full uppercase">{{ $documento->status }}</span>
                         </td>
                     </tr>
+                    @empty
                     <tr>
-                        <td class="px-6 py-4">06 Ene 2026</td>
-                        <td class="px-6 py-4 font-bold">B005-442</td>
-                        <td class="px-6 py-4">Juan Perez Sanchez</td>
-                        <td class="px-6 py-4 text-right font-bold text-slate-800">S/ 85.00</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">Validado</span>
-                        </td>
+                        <td colspan="5" class="px-6 py-4 text-center text-slate-500">No hay documentos registrados aún</td>
                     </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('dashboard', () => ({
+            period: '6months', // Valor por defecto
+            datosGrafica: @json($datosGrafica ?? []),
+            datosGraficaAnual: @json($datosGraficaAnual ?? []),
+
+            getMaxValue(period) {
+                const data = period === '6months' ? this.datosGrafica.slice(-6) : this.datosGraficaAnual;
+                return Math.max(1, ...data.map(item => item.ventas));
+            },
+
+            getTotalValue(period) {
+                const data = period === '6months' ? this.datosGrafica.slice(-6) : this.datosGraficaAnual;
+                return data.reduce((sum, item) => sum + item.ventas, 0);
+            },
+
+            formatNumber(num) {
+                return num.toLocaleString('es-PE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }));
+    });
+</script>
 @endsection

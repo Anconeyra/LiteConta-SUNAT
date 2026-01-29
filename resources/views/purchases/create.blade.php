@@ -85,16 +85,27 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase ml-1">Subtotal</label>
-                    <input type="number" step="0.01" name="subtotal" class="w-full mt-1 border-gray-200 rounded-xl" placeholder="0.00">
+                    <input type="number" step="0.01" name="subtotal" id="subtotal" class="w-full mt-1 border-gray-200 rounded-xl" placeholder="0.00">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase ml-1">IGV (18%)</label>
-                    <input type="number" step="0.01" name="igv" class="w-full mt-1 border-gray-200 rounded-xl bg-gray-50" readonly placeholder="0.00">
+                    <input type="number" step="0.01" name="igv" id="igv" class="w-full mt-1 border-gray-200 rounded-xl bg-gray-50 font-bold text-red-600" readonly placeholder="0.00">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase ml-1">Total</label>
-                    <input type="number" step="0.01" name="total" class="w-full mt-1 border-gray-200 rounded-xl font-bold text-green-600" placeholder="0.00">
+                    <input type="number" step="0.01" name="total" id="total" class="w-full mt-1 border-gray-200 rounded-xl font-bold text-green-600" placeholder="0.00">
+                    <p class="text-[10px] text-slate-400 mt-1">Ingrese el total para calcular IGV automáticamente</p>
                 </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Categoría</label>
+                <select name="category_id" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500">
+                    <option value="">Sin clasificar</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <button type="submit" class="w-full bg-green-500 text-slate-900 font-bold py-4 rounded-2xl hover:bg-green-400 transition shadow-lg shadow-green-100">
@@ -103,4 +114,47 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalInput = document.getElementById('total');
+        const igvInput = document.getElementById('igv');
+        const subtotalInput = document.getElementById('subtotal');
+
+        // Función para calcular IGV basado en el total
+        function calculateIGVFromTotal() {
+            const total = parseFloat(totalInput.value) || 0;
+            if (total > 0) {
+                // Fórmula: IGV = Total / 1.18 * 0.18
+                const igv = (total / 1.18) * 0.18;
+                const subtotal = total - igv;
+
+                igvInput.value = igv.toFixed(2);
+                subtotalInput.value = subtotal.toFixed(2);
+            } else {
+                igvInput.value = '';
+                subtotalInput.value = '';
+            }
+        }
+
+        // Función para calcular IGV basado en el subtotal
+        function calculateIGVFromSubtotal() {
+            const subtotal = parseFloat(subtotalInput.value) || 0;
+            if (subtotal > 0) {
+                const igv = subtotal * 0.18;
+                const total = subtotal + igv;
+
+                igvInput.value = igv.toFixed(2);
+                totalInput.value = total.toFixed(2);
+            } else {
+                igvInput.value = '';
+                totalInput.value = '';
+            }
+        }
+
+        // Event listeners
+        totalInput.addEventListener('input', calculateIGVFromTotal);
+        subtotalInput.addEventListener('input', calculateIGVFromSubtotal);
+    });
+</script>
 @endsection

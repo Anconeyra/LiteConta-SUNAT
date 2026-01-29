@@ -48,7 +48,20 @@ cd mype-sunat-lite
 composer install
 ```
 
-### 3. Instalar dependencias de frontend y compilar assets
+### 3. Configurar API de Consultas RUC/DNI (Opcional)
+Si deseas integrar la funcionalidad de consulta de RUC/DNI con la API de PIS Perú, sigue estos pasos:
+
+1. Regístrate en [APIsPERU](https://apisperu.com/) con tu correo: `frank.anconeyra@tecsup.edu.pe`
+2. Copia tu token de autenticación
+3. Agrega el token en tu archivo `.env`:
+
+```
+APIS_PERU_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZyYW5rLmFuY29uZXlyYUB0ZWNzdXAuZWR1LnBlIn0.fbpUPPYhnNi5ZvrZe97OxHEbMqoQSCrLCmHwoqkx75A
+```
+
+4. La API permitirá consultar información de RUC y DNI directamente desde el formulario de socios de negocio.
+
+### 4. Instalar dependencias de frontend y compilar assets
 ```bash
 npm install
 npm run build

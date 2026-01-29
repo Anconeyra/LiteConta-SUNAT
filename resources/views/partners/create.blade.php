@@ -3,7 +3,7 @@
 @section('header_title', 'Agregar Socio de Negocio')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto" x-data="partnerForm">
     <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <form action="{{ route('partners.store') }}" method="POST" class="space-y-6">
             @csrf
@@ -16,10 +16,10 @@
                         <option value="DNI">DNI</option>
                         <option value="CE">C.E.</option>
                     </select>
-                    <input type="text" id="doc_number" name="document_number" 
-                           class="flex-1 border-gray-200 rounded-xl focus:ring-green-500 font-mono" 
+                    <input type="text" id="doc_number" name="document_number"
+                           class="flex-1 border-gray-200 rounded-xl focus:ring-green-500 font-mono"
                            placeholder="Ingresa el número...">
-                    <button type="button" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                    <button type="button" @click="consultarDocumento()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2">
                         <i class="fas fa-search"></i> <span class="hidden sm:inline">Consultar</span>
                     </button>
                 </div>
@@ -60,4 +60,75 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('partnerForm', () => ({
+            consultarDocumento() {
+                const docType = document.getElementById('doc_type').value;
+                const docNumber = document.getElementById('doc_number').value.trim();
+
+                if (!docNumber) {
+                    alert('Por favor ingresa un número de documento');
+                    return;
+                }
+
+                // Validar longitud del documento
+                if (docType === 'RUC' && docNumber.length !== 11) {
+                    alert('El RUC debe tener 11 dígitos');
+                    return;
+                }
+
+                if (docType === 'DNI' && docNumber.length !== 8) {
+                    alert('El DNI debe tener 8 dígitos');
+                    return;
+                }
+
+                // Mostrar mensaje de carga
+                const button = document.querySelector('button[onclick*="consultarDocumento"]');
+                const originalText = button ? button.innerHTML : 'Consultar';
+                if(button) {
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
+                    button.disabled = true;
+                }
+
+                // Hacer la petición a la API
+                fetch(`/api/${docType.toLowerCase()}/${docNumber}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Completar los campos con la información obtenida
+                            document.getElementById('name').value = data.data.name;
+                            document.getElementById('address').value = data.data.address;
+
+                            // Actualizar el número de documento en el campo
+                            document.getElementById('doc_number').value = data.data.document_number;
+
+                            // Mostrar mensaje de éxito
+                            alert('Información consultada exitosamente');
+                        } else {
+                            alert('No se encontró información para el documento ingresado: ' + (data.message || ''));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Hubo un error al consultar la información');
+                    })
+                    .finally(() => {
+                        // Restaurar el botón
+                        if(button) {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        }
+                    });
+            }
+        }))
+    })
+</script>
 @endsection

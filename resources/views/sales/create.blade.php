@@ -61,6 +61,56 @@
                 </select>
             </div>
 
+            <div class="grid grid-cols-3 gap-2">
+                <div class="col-span-1">
+                    <x-input-label for="serie" value="Serie" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="serie" name="serie" type="text" class="w-full rounded-xl" placeholder="F001" required />
+                </div>
+                <div class="col-span-2">
+                    <x-input-label for="numero" value="Número" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="numero" name="numero" type="number" class="w-full rounded-xl" placeholder="000123" required />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <x-input-label for="subtotal" value="Subtotal" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="subtotal" name="subtotal" type="number" step="0.01" class="w-full rounded-xl" placeholder="0.00" />
+                </div>
+                <div>
+                    <x-input-label for="igv" value="IGV (18%)" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="igv" name="igv" type="number" step="0.01" class="w-full rounded-xl bg-gray-50" readonly placeholder="0.00" />
+                </div>
+                <div>
+                    <x-input-label for="total" value="Total" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="total" name="total" type="number" step="0.01" class="w-full rounded-xl font-bold text-green-600" placeholder="0.00" required />
+                </div>
+            </div>
+
+            <div>
+                <x-input-label for="category_id" value="Categoría" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                <select name="category_id" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                    <option value="">Sin clasificar</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <x-input-label for="status" value="Estado" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                <select name="status" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                    <option value="registrado">Registrado</option>
+                    <option value="anulado">Anulado</option>
+                    <option value="procesando">Procesando</option>
+                </select>
+            </div>
+
+            <div>
+                <x-input-label for="notes" value="Notas/Comentarios" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                <textarea name="notes" rows="3" class="w-full border-gray-200 rounded-xl focus:ring-green-500"></textarea>
+            </div>
+
             <div class="md:col-span-2 pt-6">
                 <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition shadow-xl shadow-slate-200 uppercase tracking-widest text-sm">
                     Registrar Venta Manual
@@ -69,4 +119,39 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Calcular IGV automáticamente cuando cambian subtotal o total
+    document.addEventListener('DOMContentLoaded', function() {
+        const subtotalInput = document.getElementById('subtotal');
+        const igvInput = document.getElementById('igv');
+        const totalInput = document.getElementById('total');
+
+        // Función para calcular IGV basado en subtotal
+        function calculateIGVFromSubtotal() {
+            const subtotal = parseFloat(subtotalInput.value) || 0;
+            const igv = subtotal * 0.18;
+            igvInput.value = igv.toFixed(2);
+
+            // Actualizar total si no está establecido
+            if (!totalInput.value) {
+                totalInput.value = (subtotal + igv).toFixed(2);
+            }
+        }
+
+        // Función para calcular subtotal e IGV basado en total
+        function calculateSubtotalAndIGVFromTotal() {
+            const total = parseFloat(totalInput.value) || 0;
+            const subtotal = total / 1.18;
+            const igv = total - subtotal;
+
+            subtotalInput.value = subtotal.toFixed(2);
+            igvInput.value = igv.toFixed(2);
+        }
+
+        // Event listeners
+        subtotalInput.addEventListener('input', calculateIGVFromSubtotal);
+        totalInput.addEventListener('input', calculateSubtotalAndIGVFromTotal);
+    });
+</script>
 @endsection

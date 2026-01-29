@@ -3,12 +3,12 @@
 @section('header_title', 'Clientes y Proveedores')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="partnersIndex">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
         <form action="{{ route('partners.index') }}" method="GET" class="flex flex-1 gap-4 w-full">
             <div class="flex-1">
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       class="w-full border-gray-200 rounded-xl focus:ring-green-500" 
+                <input type="text" name="search" value="{{ request('search') }}"
+                       class="w-full border-gray-200 rounded-xl focus:ring-green-500"
                        placeholder="Buscar por RUC, DNI o Nombre...">
             </div>
             <select name="type" class="border-gray-200 rounded-xl focus:ring-green-500 text-sm font-bold text-slate-600">
@@ -55,8 +55,17 @@
                     </span>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('partners.edit', $partner) }}" class="p-2 text-slate-300 hover:text-blue-500 transition"><i class="fas fa-edit"></i></a>
-                    <button class="p-2 text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    <a href="{{ route('partners.edit', $partner) }}" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Editar socio">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button
+                        @click="deletePartnerId = {{ $partner->id }}; deletePartnerName = `{{ $partner->name }}`; showDeleteModal = true;"
+                        class="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                        title="Eliminar socio"
+                        aria-label="Eliminar {{ $partner->name }}"
+                    >
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -66,5 +75,42 @@
     <div class="mt-6">
         {{ $partners->links() }}
     </div>
+
+    <!-- Modal de confirmación de eliminación -->
+    <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Confirmar Eliminación</h3>
+                <button @click="showDeleteModal = false" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar al socio <strong><span x-text="deletePartnerName"></span></strong>? Esta acción no se puede deshacer.</p>
+
+            <form :action="'/socios/' + deletePartnerId" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-red-600 text-white font-bold py-3.5 rounded-xl hover:bg-red-700 transition shadow-lg shadow-red-100 border border-red-300">
+                        <i class="fas fa-trash mr-2"></i>Eliminar
+                    </button>
+                    <button type="button" @click="showDeleteModal = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 transition">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('partnersIndex', () => ({
+            showDeleteModal: false,
+            deletePartnerId: null,
+            deletePartnerName: ''
+        }))
+    })
+</script>
 @endsection

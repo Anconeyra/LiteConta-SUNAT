@@ -1,0 +1,72 @@
+@extends('layouts.app')
+
+@section('header_title', 'Editar Alerta')
+
+@section('content')
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <form action="{{ route('alerts.update', $alert) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="space-y-6">
+                <div>
+                    <x-input-label for="title" value="Título de la Alerta" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <x-text-input id="title" name="title" type="text" class="w-full rounded-xl" value="{{ old('title', $alert->title) }}" required />
+                    <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="description" value="Descripción (Opcional)" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <textarea id="description" name="description" rows="3" class="w-full border-gray-200 rounded-xl focus:ring-green-500">{{ old('description', $alert->description) }}</textarea>
+                    <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <x-input-label for="alert_date" value="Fecha de la Alerta" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <input type="date" name="alert_date" value="{{ old('alert_date', $alert->alert_date->format('Y-m-d')) }}" class="w-full border-gray-200 rounded-xl focus:ring-green-500" required>
+                        <x-input-error :messages="$errors->get('alert_date')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="notification_days_before" value="Notificar con Anticipación (días)" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <input type="number" name="notification_days_before" value="{{ old('notification_days_before', $alert->notification_days_before) }}" min="0" max="365" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                        <p class="text-[10px] text-slate-400 mt-1">Días antes de la fecha para notificar (0 = sin notificación)</p>
+                        <x-input-error :messages="$errors->get('notification_days_before')" class="mt-2" />
+                    </div>
+                </div>
+
+                <div>
+                    <x-input-label for="is_active" value="Estado" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <label class="inline-flex items-center">
+                        <input type="hidden" name="is_active" value="0">
+                        <input type="checkbox" name="is_active" value="1" class="rounded text-green-600 focus:ring-green-500" {{ old('is_active', $alert->is_active) ? 'checked' : '' }}>
+                        <span class="ml-2 text-sm text-slate-600">Activar alerta</span>
+                    </label>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-green-500 text-slate-900 font-bold py-4 rounded-2xl hover:bg-green-400 transition shadow-lg shadow-green-100">
+                        <i class="fas fa-save mr-2"></i>Actualizar Alerta
+                    </button>
+                </div>
+
+                <div class="flex gap-4">
+                    <a href="{{ route('alerts.index') }}" class="flex-1 bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center">
+                        Cancelar
+                    </a>
+                    <form action="{{ route('alerts.destroy', $alert) }}" method="POST" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-2xl hover:bg-red-700 transition shadow-lg shadow-red-200"
+                                onclick="return confirm('¿Estás seguro de eliminar esta alerta? Esta acción no se puede deshacer.')">
+                            <i class="fas fa-trash mr-2"></i>Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
