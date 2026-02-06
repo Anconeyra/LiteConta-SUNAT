@@ -10,12 +10,18 @@ class AlertasController extends Controller
 {
     public function index()
     {
-        $companyId = Auth::user()->company_id;
-        $alerts = ComplianceAlert::where('company_id', $companyId)
-            ->orderBy('alert_date', 'asc')
+        $alerts = ComplianceAlert::orderBy('alert_date', 'asc')
             ->paginate(10);
 
         return view('alerts.index', compact('alerts'));
+    }
+
+    public function show(ComplianceAlert $alert)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $alert
+        ]);
     }
 
     public function create()
@@ -32,10 +38,10 @@ class AlertasController extends Controller
             'notification_days_before' => 'nullable|integer|min:0|max:365',
         ]);
 
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->company_id; // Keep for reference but don't enforce restrictions
 
         ComplianceAlert::create([
-            'company_id' => $companyId,
+            'company_id' => $companyId, // Keep for record keeping but don't enforce access restrictions
             'title' => $request->title,
             'description' => $request->description,
             'alert_date' => $request->alert_date,
@@ -43,25 +49,17 @@ class AlertasController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('alerts.index')
+        return redirect()->route('compliance-alerts.index')
             ->with('success', 'Alerta de cumplimiento creada exitosamente.');
     }
 
     public function edit(ComplianceAlert $alert)
     {
-        if ($alert->company_id != Auth::user()->company_id) {
-            abort(403, 'No autorizado');
-        }
-
         return view('alerts.edit', compact('alert'));
     }
 
     public function update(Request $request, ComplianceAlert $alert)
     {
-        if ($alert->company_id != Auth::user()->company_id) {
-            abort(403, 'No autorizado');
-        }
-
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -78,19 +76,15 @@ class AlertasController extends Controller
             'is_active' => $request->is_active ?? true,
         ]);
 
-        return redirect()->route('alerts.index')
+        return redirect()->route('compliance-alerts.index')
             ->with('success', 'Alerta de cumplimiento actualizada exitosamente.');
     }
 
     public function destroy(ComplianceAlert $alert)
     {
-        if ($alert->company_id != Auth::user()->company_id) {
-            abort(403, 'No autorizado');
-        }
-
         $alert->delete();
 
-        return redirect()->route('alerts.index')
+        return redirect()->route('compliance-alerts.index')
             ->with('success', 'Alerta de cumplimiento eliminada exitosamente.');
     }
 }

@@ -68,14 +68,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // --- MÓDULO DE ALERTAS DE CUMPLIMIENTO ---
-    Route::resource('compliance-alerts', AlertasController::class)->names([
-        'index' => 'compliance-alerts.index',
-        'create' => 'compliance-alerts.create',
-        'store' => 'compliance-alerts.store',
-        'edit' => 'compliance-alerts.edit',
-        'update' => 'compliance-alerts.update',
-        'destroy' => 'compliance-alerts.destroy'
-    ])->parameters(['compliance-alerts' => 'alert']);
+    // Resource route for compliance alerts (English)
+    Route::resource('compliance-alerts', AlertasController::class);
+
+    // Redirect Spanish URLs to the English resource routes
+    Route::get('/alertas-de-cumplimiento', function () {
+        return redirect()->route('compliance-alerts.index');
+    });
+    Route::get('/alertas-de-cumplimiento/crear', function () {
+        return redirect()->route('compliance-alerts.create');
+    });
+    Route::get('/alertas-de-cumplimiento/{alert}/editar', function ($alert) {
+        return redirect()->route('compliance-alerts.edit', $alert);
+    });
 
     // --- MÓDULO DE REPORTES ---
     Route::prefix('reports')->name('reports.')->group(function () {

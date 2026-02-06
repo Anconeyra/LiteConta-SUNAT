@@ -31,6 +31,30 @@
             </header>
 
             <main class="p-6">
+                <!-- Mensajes flash -->
+                @if(session('success'))
+                    <div class="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-xl">
+                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-6 p-4 bg-red-100 border border-red-200 text-red-700 rounded-xl">
+                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="mb-6 p-4 bg-red-100 border border-red-200 text-red-700 rounded-xl">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <ul class="list-disc pl-5 mt-2">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>

@@ -94,8 +94,7 @@ class DashboardController extends Controller
         
         // Obtener alertas de cumplimiento próximas
         $hoy = Carbon::today();
-        $proximasAlertas = ComplianceAlert::where('company_id', $companyId)
-            ->where('is_active', true)
+        $proximasAlertas = ComplianceAlert::where('is_active', true)
             ->where('alert_date', '>=', $hoy)
             ->where('alert_date', '<=', $hoy->copy()->addDays(30))
             ->orderBy('alert_date', 'asc')

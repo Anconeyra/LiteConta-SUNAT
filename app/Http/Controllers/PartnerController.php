@@ -38,29 +38,67 @@ class PartnerController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'document_type' => 'required|in:RUC,DNI,CE',
-            'document_number' => 'required|string|max:15|unique:partners,document_number',
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'is_customer' => 'boolean',
-            'is_supplier' => 'boolean',
-        ]);
+        try {
+            // Verificar que el usuario esté autenticado y tenga una empresa asignada
+            if (!Auth::check()) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'Debe iniciar sesión para crear un socio de negocio.']);
+            }
 
-        $companyId = Auth::user()->company_id;
+            $user = Auth::user();
+            if (!$user->company_id) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'El usuario no tiene una empresa asignada.']);
+            }
 
-        Partner::create([
-            'company_id' => $companyId,
-            'document_type' => $request->document_type,
-            'document_number' => $request->document_number,
-            'name' => $request->name,
-            'address' => $request->address,
-            'is_customer' => $request->is_customer ? 1 : 0,
-            'is_supplier' => $request->is_supplier ? 1 : 0,
-        ]);
+            $validatedData = $request->validate([
+                'document_type' => 'required|in:RUC,DNI,CE',
+                'document_number' => 'required|string|max:15|unique:partners,document_number,NULL,id,company_id,' . $user->company_id,
+                'name' => 'required|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'is_customer' => 'boolean',
+                'is_supplier' => 'boolean',
+            ], [
+                'document_number.unique' => 'Ya existe un socio de negocio con este número de documento en su empresa.'
+            ]);
 
-        return redirect()->route('partners.index')
-            ->with('success', 'Socio de negocio creado exitosamente.');
+            $partner = Partner::create([
+                'company_id' => $user->company_id,
+                'document_type' => $validatedData['document_type'],
+                'document_number' => $validatedData['document_number'],
+                'name' => $validatedData['name'] ?? '',
+                'address' => $validatedData['address'] ?? '',
+                'is_customer' => $validatedData['is_customer'] ? 1 : 0,
+                'is_supplier' => $validatedData['is_supplier'] ? 1 : 0,
+            ]);
+
+            if ($partner) {
+                return redirect()->route('partners.index')
+                    ->with('success', 'Socio de negocio creado exitosamente.');
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'No se pudo crear el socio de negocio. Por favor, inténtelo de nuevo.']);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Manejar específicamente errores de validación
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            \Log::error('Error al crear socio de negocio: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'user_id' => Auth::id(),
+                'user_authenticated' => Auth::check(),
+                'company_id' => Auth::check() ? Auth::user()->company_id : null
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Ocurrió un error al crear el socio de negocio. Por favor, inténtelo de nuevo.']);
+        }
     }
 
     public function edit(Partner $partner)
@@ -88,26 +126,67 @@ class PartnerController extends Controller
         }
         */
 
-        $request->validate([
-            'document_type' => 'required|in:RUC,DNI,CE',
-            'document_number' => 'required|string|max:15|unique:partners,document_number,' . $partner->id,
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'is_customer' => 'boolean',
-            'is_supplier' => 'boolean',
-        ]);
+        try {
+            // Verificar que el usuario esté autenticado y tenga una empresa asignada
+            if (!Auth::check()) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'Debe iniciar sesión para actualizar un socio de negocio.']);
+            }
 
-        $partner->update([
-            'document_type' => $request->document_type,
-            'document_number' => $request->document_number,
-            'name' => $request->name,
-            'address' => $request->address,
-            'is_customer' => $request->is_customer ? 1 : 0,
-            'is_supplier' => $request->is_supplier ? 1 : 0,
-        ]);
+            $user = Auth::user();
+            if (!$user->company_id) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'El usuario no tiene una empresa asignada.']);
+            }
 
-        return redirect()->route('partners.index')
-            ->with('success', 'Socio de negocio actualizado exitosamente.');
+            $validatedData = $request->validate([
+                'document_type' => 'required|in:RUC,DNI,CE',
+                'document_number' => 'required|string|max:15|unique:partners,document_number,' . $partner->id . ',id,company_id,' . $user->company_id,
+                'name' => 'required|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'is_customer' => 'boolean',
+                'is_supplier' => 'boolean',
+            ], [
+                'document_number.unique' => 'Ya existe un socio de negocio con este número de documento en su empresa.'
+            ]);
+
+            $updated = $partner->update([
+                'document_type' => $validatedData['document_type'],
+                'document_number' => $validatedData['document_number'],
+                'name' => $validatedData['name'],
+                'address' => $validatedData['address'],
+                'is_customer' => $validatedData['is_customer'] ? 1 : 0,
+                'is_supplier' => $validatedData['is_supplier'] ? 1 : 0,
+            ]);
+
+            if ($updated) {
+                return redirect()->route('partners.index')
+                    ->with('success', 'Socio de negocio actualizado exitosamente.');
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'No se pudo actualizar el socio de negocio. Por favor, inténtelo de nuevo.']);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Manejar específicamente errores de validación
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            \Log::error('Error al actualizar socio de negocio: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'partner_id' => $partner->id,
+                'user_id' => Auth::id(),
+                'user_authenticated' => Auth::check(),
+                'company_id' => Auth::check() ? Auth::user()->company_id : null
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Ocurrió un error al actualizar el socio de negocio. Por favor, inténtelo de nuevo.']);
+        }
     }
 
     public function destroy(Partner $partner)

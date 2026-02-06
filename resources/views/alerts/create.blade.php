@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto">
     <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <form action="{{ route('alerts.store') }}" method="POST">
+        <form action="{{ route('compliance-alerts.store') }}" method="POST">
             @csrf
 
             <div class="space-y-6">
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <a href="{{ route('alerts.index') }}" class="w-full bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center block">
+                    <a href="{{ route('compliance-alerts.index') }}" class="w-full bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center block">
                         Cancelar
                     </a>
                 </div>

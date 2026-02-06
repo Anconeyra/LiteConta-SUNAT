@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto">
     <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <form action="{{ route('alerts.update', $alert) }}" method="POST">
+        <form action="{{ route('compliance-alerts.update', $alert) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -53,10 +53,10 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <a href="{{ route('alerts.index') }}" class="flex-1 bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center">
+                    <a href="{{ route('compliance-alerts.index') }}" class="flex-1 bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center">
                         Cancelar
                     </a>
-                    <form action="{{ route('alerts.destroy', $alert) }}" method="POST" class="flex-1">
+                    <form action="{{ route('compliance-alerts.destroy', $alert) }}" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-2xl hover:bg-red-700 transition shadow-lg shadow-red-200"

@@ -117,7 +117,7 @@
                 }
 
                 // Mostrar mensaje de carga
-                const button = document.querySelector('button[@click="consultarDocumento()"]');
+                const button = document.querySelector('button[onclick*="consultarDocumento"]');
                 const originalText = button ? button.innerHTML : 'Consultar';
                 if(button) {
                     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
@@ -139,18 +139,24 @@
                             document.getElementById('name').value = data.data.name;
                             document.getElementById('address').value = data.data.address;
 
-                            // Actualizar el número de documento en el campo
+                            // Actualizar el número de documento en ambos campos (superior e inferior)
+                            document.getElementById('doc_number').value = data.data.document_number;
                             document.getElementById('document_number').value = data.data.document_number;
+
+                            // Actualizar el tipo de documento en el campo superior
+                            document.getElementById('doc_type').value = data.data.document_number.length === 11 ? 'RUC' : 'DNI';
 
                             // Mostrar mensaje de éxito
                             alert('Información consultada exitosamente');
                         } else {
-                            alert('No se encontró información para el documento ingresado: ' + (data.message || ''));
+                            // Mostrar mensaje de error pero permitir ingreso manual
+                            alert('No se encontró información para el documento ingresado: ' + (data.message || '') + '. Puedes ingresar la información manualmente.');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Hubo un error al consultar la información');
+                        // Manejar el error pero permitir ingreso manual
+                        alert('Hubo un error al consultar la información. Puedes ingresar la información manualmente.');
                     })
                     .finally(() => {
                         // Restaurar el botón

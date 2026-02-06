@@ -18,12 +18,12 @@
                     </select>
                     <input type="text" id="doc_number" name="document_number"
                            class="flex-1 border-gray-200 rounded-xl focus:ring-green-500 font-mono"
-                           placeholder="Ingresa el número...">
+                           placeholder="Ingresa el número..." required>
                     <button type="button" @click="consultarDocumento()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2">
                         <i class="fas fa-search"></i> <span class="hidden sm:inline">Consultar</span>
                     </button>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2 italic">* La consulta completará automáticamente el nombre y dirección.</p>
+                <p class="text-[10px] text-slate-400 mt-2 italic">* La consulta completará automáticamente el nombre y dirección. Si la consulta falla, puedes ingresar la información manualmente.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -110,15 +110,20 @@
                             // Actualizar el número de documento en el campo
                             document.getElementById('doc_number').value = data.data.document_number;
 
+                            // Actualizar el tipo de documento en el campo
+                            document.getElementById('doc_type').value = data.data.document_number.length === 11 ? 'RUC' : 'DNI';
+
                             // Mostrar mensaje de éxito
                             alert('Información consultada exitosamente');
                         } else {
-                            alert('No se encontró información para el documento ingresado: ' + (data.message || ''));
+                            // Mostrar mensaje de error pero permitir ingreso manual
+                            alert('No se encontró información para el documento ingresado: ' + (data.message || '') + '. Puedes ingresar la información manualmente.');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Hubo un error al consultar la información');
+                        // Manejar el error pero permitir ingreso manual
+                        alert('Hubo un error al consultar la información. Puedes ingresar la información manualmente.');
                     })
                     .finally(() => {
                         // Restaurar el botón

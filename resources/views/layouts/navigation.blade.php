@@ -60,7 +60,7 @@
         </a>
 
         <a href="{{ route('compliance-alerts.index') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('compliance-alerts.index') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('compliance-alerts.*') ? 'bg-green-500 text-slate-900 font-bold' : 'hover:bg-slate-800 text-slate-300 hover:text-white' }}">
             <i class="fas fa-bell w-5 text-center text-lg"></i>
             <span class="text-sm tracking-wide">Alertas Cumplimiento</span>
         </a>
