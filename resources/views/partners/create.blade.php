@@ -1,139 +1,232 @@
 @extends('layouts.app')
 
-@section('header_title', 'Agregar Socio de Negocio')
+@section('header_title', 'Nuevo Socio de Negocio')
 
 @section('content')
-<div class="max-w-3xl mx-auto" x-data="partnerForm">
-    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <form action="{{ route('partners.store') }}" method="POST" class="space-y-6">
-            @csrf
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-8">
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 block">Consulta Rápida (SUNAT/RENIEC)</label>
-                <div class="flex gap-2">
-                    <select id="doc_type" name="document_type" class="border-gray-200 rounded-xl focus:ring-green-500 text-sm">
-                        <option value="RUC">RUC</option>
-                        <option value="DNI">DNI</option>
-                        <option value="CE">C.E.</option>
-                    </select>
-                    <input type="text" id="doc_number" name="document_number"
-                           class="flex-1 border-gray-200 rounded-xl focus:ring-green-500 font-mono"
-                           placeholder="Ingresa el número..." required>
-                    <button type="button" @click="consultarDocumento()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2">
-                        <i class="fas fa-search"></i> <span class="hidden sm:inline">Consultar</span>
+    <div class="max-w-2xl mx-auto my-6" x-data="partnerForm()">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+            <div class="bg-slate-50 p-6 border-b border-gray-100">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                    Paso 1: Consulta de Identidad
+                </h3>
+
+                <div class="flex flex-col sm:flex-row items-stretch gap-2">
+                    <div
+                        class="flex flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-slate-500/10 focus-within:border-slate-500 transition-all">
+                        <div class="relative border-r border-gray-100 bg-slate-50">
+                            <select x-model="docType" @change="handleTypeChange"
+                                class="appearance-none bg-none pl-4 pr-8 py-2 text-sm font-bold text-slate-700 border-none focus:ring-0 cursor-pointer">
+                                <option value="RUC">RUC</option>
+                                <option value="DNI">DNI</option>
+                                <option value="CE">C.E.</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-slate-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <input type="text" x-model="docNumber" @input="limitInput"
+                            class="flex-1 border-none focus:ring-0 text-sm py-2 px-4 text-slate-700 placeholder:text-slate-300"
+                            :placeholder="'Escriba ' + docType">
+                    </div>
+
+                    <button type="button" @click="consultarDocumento()" :disabled="loading"
+                        class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                        <span x-show="!loading"><i class="fas fa-search text-xs"></i> CONSULTAR</span>
+                        <span x-show="loading" class="animate-spin"><i class="fas fa-circle-notch"></i></span>
                     </button>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2 italic">* La consulta completará automáticamente el nombre y dirección. Si la consulta falla, puedes ingresar la información manualmente.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                    <x-input-label for="name" value="Razón Social / Nombre Completo" class="font-bold text-xs uppercase text-slate-400 mb-2" />
-                    <x-text-input id="name" name="name" type="text" class="w-full rounded-xl" required />
+            <form action="{{ route('partners.store') }}" method="POST" class="p-6 space-y-5">
+                @csrf
+                <input type="hidden" name="status_sunat" x-model="status_sunat">
+                <input type="hidden" name="condition_sunat" x-model="condition_sunat">
+                <input type="hidden" name="document_type" x-model="docType">
+                <input type="hidden" name="document_number" x-model="docNumber">
+
+                <template x-if="name">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center gap-4 animate-fade-in">
+                        <div :class="isCompany ? 'bg-indigo-600' : 'bg-emerald-600'"
+                            class="w-12 h-12 rounded-lg flex flex-col items-center justify-center text-white shrink-0">
+                            <i class="fas text-lg" :class="isCompany ? 'fa-building' : 'fa-user'"></i>
+                            <span class="text-[7px] font-black" x-text="isCompany ? 'EMPRESA' : 'PERSONA'"></span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 leading-tight" x-text="name"></h4>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700"
+                                    x-text="status_sunat"></span>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700"
+                                    x-text="condition_sunat"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="grid grid-cols-1 gap-5">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block ml-1">Nombre
+                            Completo o Razón Social</label>
+                        <input type="text" name="name" x-model="name" required
+                            class="w-full border-gray-200 rounded-xl py-2.5 px-4 focus:ring-2 focus:ring-slate-500/10 focus:border-slate-500 transition-all text-sm text-slate-700 font-medium">
+                    </div>
+
+                    <div>
+                        <label
+                            class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block ml-1">Dirección
+                            Fiscal</label>
+                        <div class="relative">
+                            <input type="text" name="address" x-model="address"
+                                class="w-full border-gray-200 rounded-xl py-2.5 px-4 focus:ring-2 focus:ring-slate-500/10 focus:border-slate-500 transition-all text-sm text-slate-600"
+                                placeholder="Ej. Av. Principal 123, Lima">
+                            <i class="fas fa-map-marker-alt absolute right-4 top-3 text-slate-300 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide ml-1 block">¿Qué rol
+                            cumple este socio?</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label
+                                class="relative flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all group"
+                                :class="isCustomer ? 'border-blue-500 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-blue-200'">
+                                <input type="checkbox" name="is_customer" value="1" x-model="isCustomer" class="hidden">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0"
+                                    :class="isCustomer ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400 group-hover:text-blue-400'">
+                                    <i class="fas fa-shopping-cart text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-xs uppercase"
+                                        :class="isCustomer ? 'text-blue-700' : 'text-slate-500'">Cliente</span>
+                                    <span class="text-[10px] text-slate-400">Venta de productos</span>
+                                </div>
+                            </label>
+
+                            <label
+                                class="relative flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all group"
+                                :class="isSupplier ? 'border-orange-500 bg-orange-50/30' : 'border-gray-100 bg-white hover:border-orange-200'">
+                                <input type="checkbox" name="is_supplier" value="1" x-model="isSupplier" class="hidden">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0"
+                                    :class="isSupplier ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-400 group-hover:text-orange-400'">
+                                    <i class="fas fa-truck text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-xs uppercase"
+                                        :class="isSupplier ? 'text-orange-700' : 'text-slate-500'">Proveedor</span>
+                                    <span class="text-[10px] text-slate-400">Compra de insumos</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="md:col-span-2">
-                    <x-input-label for="address" value="Dirección Fiscal" class="font-bold text-xs uppercase text-slate-400 mb-2" />
-                    <x-text-input id="address" name="address" type="text" class="w-full rounded-xl" />
+                <div class="pt-4 flex items-center gap-3">
+                    <button type="submit"
+                        class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-all text-xs uppercase tracking-widest shadow-lg shadow-slate-200">
+                        <i class="fas fa-save mr-2"></i> Guardar Registro
+                    </button>
+                    <a href="{{ route('partners.index') }}"
+                        class="px-6 py-3 bg-white text-slate-400 font-bold rounded-xl border border-gray-200 hover:bg-slate-50 transition-all text-xs uppercase tracking-widest">
+                        Cancelar
+                    </a>
                 </div>
-
-                <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="is_customer" value="1" class="rounded text-blue-600 focus:ring-blue-500">
-                        <span class="text-sm font-bold text-blue-800">Es un Cliente</span>
-                    </label>
-                </div>
-
-                <div class="p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="is_supplier" value="1" class="rounded text-orange-600 focus:ring-orange-500">
-                        <span class="text-sm font-bold text-orange-800">Es un Proveedor</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="pt-6">
-                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition shadow-xl shadow-slate-200 uppercase tracking-widest text-sm">
-                    Guardar Socio de Negocio
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('partnerForm', () => ({
-            consultarDocumento() {
-                const docType = document.getElementById('doc_type').value;
-                const docNumber = document.getElementById('doc_number').value.trim();
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
 
-                if (!docNumber) {
-                    alert('Por favor ingresa un número de documento');
-                    return;
-                }
-
-                // Validar longitud del documento
-                if (docType === 'RUC' && docNumber.length !== 11) {
-                    alert('El RUC debe tener 11 dígitos');
-                    return;
-                }
-
-                if (docType === 'DNI' && docNumber.length !== 8) {
-                    alert('El DNI debe tener 8 dígitos');
-                    return;
-                }
-
-                // Mostrar mensaje de carga
-                const button = document.querySelector('button[onclick*="consultarDocumento"]');
-                const originalText = button ? button.innerHTML : 'Consultar';
-                if(button) {
-                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
-                    button.disabled = true;
-                }
-
-                // Hacer la petición a la API
-                fetch(`/api/${docType.toLowerCase()}/${docNumber}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Completar los campos con la información obtenida
-                            document.getElementById('name').value = data.data.name;
-                            document.getElementById('address').value = data.data.address;
-
-                            // Actualizar el número de documento en el campo
-                            document.getElementById('doc_number').value = data.data.document_number;
-
-                            // Actualizar el tipo de documento en el campo
-                            document.getElementById('doc_type').value = data.data.document_number.length === 11 ? 'RUC' : 'DNI';
-
-                            // Mostrar mensaje de éxito
-                            alert('Información consultada exitosamente');
-                        } else {
-                            // Mostrar mensaje de error pero permitir ingreso manual
-                            alert('No se encontró información para el documento ingresado: ' + (data.message || '') + '. Puedes ingresar la información manualmente.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        // Manejar el error pero permitir ingreso manual
-                        alert('Hubo un error al consultar la información. Puedes ingresar la información manualmente.');
-                    })
-                    .finally(() => {
-                        // Restaurar el botón
-                        if(button) {
-                            button.innerHTML = originalText;
-                            button.disabled = false;
-                        }
-                    });
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
             }
-        }))
-    })
-</script>
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        function partnerForm() {
+            return {
+                docType: 'RUC',
+                docNumber: '',
+                name: '',
+                address: '',
+                status_sunat: '',
+                condition_sunat: '',
+                isCustomer: false,
+                isSupplier: false,
+                loading: false,
+                maxDigits: 11,
+
+                get isCompany() {
+                    return this.docType === 'RUC' && this.docNumber.startsWith('20');
+                },
+
+                handleTypeChange() {
+                    this.docNumber = '';
+                    if (this.docType === 'RUC') this.maxDigits = 11;
+                    else if (this.docType === 'DNI') this.maxDigits = 8;
+                    else this.maxDigits = 9;
+                },
+
+                limitInput() {
+                    this.docNumber = this.docNumber.replace(/[^0-9]/g, '');
+                    if (this.docNumber.length > this.maxDigits) {
+                        this.docNumber = this.docNumber.slice(0, this.maxDigits);
+                    }
+                },
+
+                async consultarDocumento() {
+                    if (this.docNumber.length < 8) {
+                        Swal.fire('Atención', 'Número demasiado corto', 'warning');
+                        return;
+                    }
+                    this.loading = true;
+                    try {
+                        const response = await fetch(`/api/${this.docType.toLowerCase()}/${this.docNumber}`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                        });
+                        const res = await response.json();
+
+                        if (res.success) {
+                            this.name = res.data.name || '';
+                            this.address = res.data.address || '';
+                            this.status_sunat = res.data.status_sunat || 'ACTIVO';
+                            this.condition_sunat = res.data.condition_sunat || 'HABIDO';
+                            Toast.fire({ icon: 'success', title: 'Datos importados' });
+                        } else {
+                            Swal.fire('No encontrado', 'Verifica el número ingresado', 'info');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', 'Falla de conexión', 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    </script>
 @endsection

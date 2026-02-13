@@ -3,151 +3,259 @@
 @section('header_title', 'Editar Compra')
 
 @section('content')
-<div class="max-w-4xl mx-auto" x-data="{ tab: 'manual' }">
+    <div class="max-w-4xl mx-auto" x-data="{ 
+        total: {{ $purchase->total }},
+        subtotal: {{ $purchase->subtotal }},
+        igv: {{ $purchase->igv }},
+        // Cargamos los items limpiando los decimales sobrantes mediante un map en PHP
+        items: {{ $purchase->items->map(function($item) {
+            return [
+                'description' => $item->description,
+                'quantity' => (float)$item->quantity,
+                'unit_price' => (float)$item->unit_price,
+                'total' => (float)$item->total,
+            ];
+        })->toJson() }},
 
-    <div class="flex bg-slate-200 p-1 rounded-2xl mb-6 w-fit">
-        <button @click="tab = 'manual'" :class="tab === 'manual' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-6 py-2 rounded-xl text-sm font-bold transition-all">
-            <i class="fas fa-keyboard mr-2"></i> Registro Manual
-        </button>
+        addItem() {
+            this.items.push({ description: '', quantity: 1, unit_price: 0, total: 0 });
+        },
+        removeItem(index) {
+            if(this.items.length > 1) this.items.splice(index, 1);
+            this.calculateGrandTotal();
+        },
+        calculateItemTotal(index) {
+            let item = this.items[index];
+            item.total = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)).toFixed(2);
+            this.calculateGrandTotal();
+        },
+        calculateGrandTotal() {
+            let total = this.items.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+            this.total = total.toFixed(2);
+            this.calculateFromTotal();
+        },
+        calculateFromTotal() {
+            this.subtotal = (this.total / 1.18).toFixed(2);
+            this.igv = (this.total - this.subtotal).toFixed(2);
+        },
+        calculateFromSubtotal() {
+            this.igv = (this.subtotal * 0.18).toFixed(2);
+            this.total = (parseFloat(this.subtotal) + parseFloat(this.igv)).toFixed(2);
+        }
+    }">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-slate-50 px-8 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-slate-800 font-bold uppercase text-sm tracking-wider">
+                    <i class="fas fa-edit mr-2 text-green-500"></i>Detalles del Documento de Compra
+                </h3>
+                <span class="text-xs font-mono text-slate-400">ID: #{{ $purchase->id }}</span>
+            </div>
+
+            <form action="{{ route('purchases.update', $purchase) }}" method="POST" class="p-8">
+                @csrf
+                @method('PUT')
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <x-input-label value="Tipo de Comprobante"
+                            class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <select name="sunat_type_id"
+                            class="w-full border-gray-200 rounded-xl focus:ring-green-500 bg-slate-50/50" required>
+                            @foreach($documentTypes as $type)
+                                <option value="{{ $type->id }}" {{ $purchase->sunat_type_id == $type->id ? 'selected' : '' }}>
+                                    {{ $type->description }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label value="Fecha de Emisión" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <input type="date" name="issue_date" value="{{ $purchase->issue_date->format('Y-m-d') }}"
+                            class="w-full border-gray-200 rounded-xl focus:ring-green-500" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-1">
+                            <x-input-label value="Serie" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                            <input type="text" name="serie" value="{{ $purchase->serie }}"
+                                class="w-full border-gray-200 rounded-xl focus:ring-green-500 uppercase" placeholder="F001"
+                                required>
+                        </div>
+                        <div class="col-span-2">
+                            <x-input-label value="Número" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                            <input type="number" name="numero" value="{{ $purchase->numero }}"
+                                class="w-full border-gray-200 rounded-xl focus:ring-green-500" placeholder="000123"
+                                required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <x-input-label value="Proveedor" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <select name="partner_id" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                            @foreach($partners as $partner)
+                                <option value="{{ $partner->id }}" {{ $purchase->partner_id == $partner->id ? 'selected' : '' }}>
+                                    {{ $partner->document_number }} - {{ $partner->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <x-input-label value="Categoría de Gasto"
+                            class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <select name="category_id" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                            <option value="">Sin clasificar</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ $purchase->category_id == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label value="Estado de la Compra" class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                        <select name="status"
+                            class="w-full border-gray-200 rounded-xl focus:ring-green-500 font-bold {{ $purchase->status == 'anulado' ? 'text-red-600' : 'text-slate-700' }}">
+                            <option value="registrado" {{ $purchase->status == 'registrado' ? 'selected' : '' }}>Registrado</option>
+                            <option value="anulado" {{ $purchase->status == 'anulado' ? 'selected' : '' }}>Anulado</option>
+                            <option value="procesando" {{ $purchase->status == 'procesando' ? 'selected' : '' }}>Procesando</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bloque de Tabla de Items -->
+                <div class="col-span-2 mt-4 mb-8 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-black text-xs uppercase text-slate-500 tracking-widest text-blue-600">Items del Documento</h4>
+                        <button type="button" @click="addItem()" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
+                            <i class="fas fa-plus-circle"></i> AÑADIR PRODUCTO
+                        </button>
+                    </div>
+
+                    <!-- Guía de Encabezados -->
+                    <div class="hidden md:grid grid-cols-12 gap-3 px-4 mb-2">
+                        <div class="col-span-6">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</span>
+                        </div>
+                        <div class="col-span-2 text-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cantidad</span>
+                        </div>
+                        <div class="col-span-2 text-right">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">P. Unitario</span>
+                        </div>
+                        <div class="col-span-2 text-right pr-9">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Ítem</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <template x-for="(item, index) in items" :key="index">
+                            <div class="grid grid-cols-12 gap-3 items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
+                                <div class="col-span-12 md:col-span-6">
+                                    <x-input-label class="md:hidden text-[10px] uppercase font-bold text-slate-400" value="Descripción" />
+                                    <input type="text" x-model="item.description" :name="'items['+index+'][description]'" 
+                                        class="w-full border-none text-sm focus:ring-0 p-0 font-medium text-slate-700" placeholder="Ej: Servicio de hosting...">
+                                </div>
+                                <div class="col-span-4 md:col-span-2">
+                                    <x-input-label class="md:hidden text-[10px] uppercase font-bold text-slate-400" value="Cant." />
+                                    <input type="number" x-model="item.quantity" @input="calculateItemTotal(index)" :name="'items['+index+'][quantity]'"
+                                        class="w-full border-none text-sm text-center focus:ring-0 p-0" step="0.0001">
+                                </div>
+                                <div class="col-span-4 md:col-span-2">
+                                    <x-input-label class="md:hidden text-[10px] uppercase font-bold text-slate-400" value="P. Unit" />
+                                    <input type="number" x-model="item.unit_price" @input="calculateItemTotal(index)" :name="'items['+index+'][unit_price]'"
+                                        class="w-full border-none text-sm text-right focus:ring-0 p-0" step="0.0001">
+                                </div>
+                                <div class="col-span-4 md:col-span-2 flex items-center justify-end gap-3">
+                                    <div class="text-right">
+                                        <x-input-label class="md:hidden text-[10px] uppercase font-bold text-slate-400" value="Total Item" />
+                                        <!-- Visualización limpia con parseFloat -->
+                                        <span class="text-sm font-bold text-slate-600" x-text="parseFloat(item.total)"></span>
+                                        <input type="hidden" :name="'items['+index+'][total]'" :value="item.total">
+                                    </div>
+                                    <button type="button" @click="removeItem(index)" class="text-red-300 hover:text-red-500 transition-colors">
+                                        <i class="fas fa-times-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <x-input-label value="Descripción / Notas"
+                        class="font-bold text-xs uppercase text-slate-400 mb-2" />
+                    <div class="relative">
+                        <textarea name="notes" rows="4"
+                            class="w-full border-gray-200 rounded-2xl focus:ring-green-500 bg-slate-50 text-sm leading-relaxed text-slate-600 p-4 transition-all"
+                            placeholder="Detalle de los productos o servicios comprados..."
+                            style="min-height: 100px;">{{ $purchase->notes }}</textarea>
+                        <div class="absolute top-3 right-3 text-slate-300">
+                            <i class="fas fa-align-left"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 bg-green-50/30 p-6 rounded-2xl border border-green-100">
+                    <div>
+                        <x-input-label value="Subtotal" class="font-bold text-xs uppercase text-green-600/70 mb-2" />
+                        <input type="number" step="0.01" name="subtotal" x-model="subtotal" @input="calculateFromSubtotal()"
+                            class="w-full border-green-200 rounded-xl focus:ring-green-500">
+                    </div>
+                    <div>
+                        <x-input-label value="IGV (18%)" class="font-bold text-xs uppercase text-green-600/70 mb-2" />
+                        <input type="number" step="0.01" name="igv" x-model="igv" readonly
+                            class="w-full border-transparent bg-transparent font-medium text-slate-500 focus:ring-0">
+                    </div>
+                    <div>
+                        <x-input-label value="Monto Total" class="font-bold text-xs uppercase text-green-700 mb-2" />
+                        <input type="number" step="0.01" name="total" x-model="total" @input="calculateFromTotal()"
+                            class="w-full border-green-300 rounded-xl font-black text-green-600 text-lg focus:ring-green-500 shadow-sm">
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit"
+                        class="flex-[2] bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest text-sm">
+                        <i class="fas fa-save mr-2"></i>Actualizar Compra
+                    </button>
+                    <a href="{{ route('purchases.index') }}"
+                        class="flex-1 bg-white text-slate-500 border border-slate-200 font-bold py-4 rounded-2xl hover:bg-slate-50 transition-all text-center uppercase tracking-widest text-sm">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+
+            <div class="bg-red-50/50 p-8 border-t border-red-100">
+                <form action="{{ route('purchases.destroy', $purchase) }}" method="POST"
+                    onsubmit="return confirm('¿Estás totalmente seguro? Esta acción eliminará permanentemente el registro de compra.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                        class="group flex items-center justify-center w-full text-red-400 hover:text-red-600 text-xs font-bold uppercase tracking-tighter transition-all">
+                        <i class="fas fa-trash-alt mr-2 group-hover:shake"></i>
+                        Eliminar Registro de Compra Permanentemente
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div x-show="tab === 'manual'" x-transition class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <form action="{{ route('purchases.update', $purchase) }}" method="POST" class="space-y-6">
-            @csrf
-            @method('PUT')
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Tipo de Documento</label>
-                    <select name="sunat_type_id" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500" required>
-                        @foreach($documentTypes as $type)
-                            <option value="{{ $type->id }}" {{ $purchase->sunat_type_id == $type->id ? 'selected' : '' }}>
-                                {{ $type->description }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Fecha de Emisión</label>
-                    <input type="date" name="issue_date" value="{{ $purchase->issue_date->format('Y-m-d') }}" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500" required>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-1">
-                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Serie</label>
-                        <input type="text" name="serie" value="{{ $purchase->serie }}" class="w-full mt-1 border-gray-200 rounded-xl" placeholder="F001" required>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Número</label>
-                        <input type="number" name="numero" value="{{ $purchase->numero }}" class="w-full mt-1 border-gray-200 rounded-xl" placeholder="000123" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Proveedor (Partner)</label>
-                    <select name="partner_id" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500">
-                        <option value="">Seleccionar proveedor</option>
-                        @foreach($partners as $partner)
-                            <option value="{{ $partner->id }}" {{ $purchase->partner_id == $partner->id ? 'selected' : '' }}>
-                                {{ $partner->document_number }} - {{ $partner->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Categoría</label>
-                    <select name="category_id" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500">
-                        <option value="">Sin clasificar</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ $purchase->category_id == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Estado</label>
-                    <select name="status" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500">
-                        <option value="registrado" {{ $purchase->status == 'registrado' ? 'selected' : '' }}>Registrado</option>
-                        <option value="anulado" {{ $purchase->status == 'anulado' ? 'selected' : '' }}>Anulado</option>
-                        <option value="procesando" {{ $purchase->status == 'procesando' ? 'selected' : '' }}>Procesando</option>
-                    </select>
-                </div>
-            </div>
-
-            <hr class="border-gray-50">
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Subtotal</label>
-                    <input type="number" step="0.01" name="subtotal" id="subtotal" value="{{ $purchase->subtotal }}" class="w-full mt-1 border-gray-200 rounded-xl" placeholder="0.00">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">IGV (18%)</label>
-                    <input type="number" step="0.01" name="igv" id="igv" value="{{ $purchase->igv }}" class="w-full mt-1 border-gray-200 rounded-xl bg-gray-50 font-bold text-red-600" readonly placeholder="0.00">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Total</label>
-                    <input type="number" step="0.01" name="total" id="total" value="{{ $purchase->total }}" class="w-full mt-1 border-gray-200 rounded-xl font-bold text-green-600" placeholder="0.00">
-                    <p class="text-[10px] text-slate-400 mt-1">Ingrese el total para recalcular IGV</p>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Notas</label>
-                <textarea name="notes" rows="3" class="w-full mt-1 border-gray-200 rounded-xl focus:ring-green-500">{{ $purchase->notes }}</textarea>
-            </div>
-
-            <div class="flex gap-4">
-                <button type="submit" class="w-full bg-green-500 text-slate-900 font-bold py-4 rounded-2xl hover:bg-green-400 transition shadow-lg shadow-green-100">
-                    Actualizar Documento de Compra
-                </button>
-                <a href="{{ route('purchases.index') }}" class="w-full bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition">
-                    Cancelar
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const totalInput = document.getElementById('total');
-        const igvInput = document.getElementById('igv');
-        const subtotalInput = document.getElementById('subtotal');
-
-        // Función para calcular IGV basado en el total
-        function calculateIGVFromTotal() {
-            const total = parseFloat(totalInput.value) || 0;
-            if (total > 0) {
-                // Fórmula: IGV = Total / 1.18 * 0.18
-                const igv = (total / 1.18) * 0.18;
-                const subtotal = total - igv;
-
-                igvInput.value = igv.toFixed(2);
-                subtotalInput.value = subtotal.toFixed(2);
-            } else {
-                igvInput.value = '';
-                subtotalInput.value = '';
-            }
+    <style>
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
         }
-
-        // Función para calcular IGV basado en el subtotal
-        function calculateIGVFromSubtotal() {
-            const subtotal = parseFloat(subtotalInput.value) || 0;
-            if (subtotal > 0) {
-                const igv = subtotal * 0.18;
-                const total = subtotal + igv;
-
-                igvInput.value = igv.toFixed(2);
-                totalInput.value = total.toFixed(2);
-            } else {
-                igvInput.value = '';
-                totalInput.value = '';
-            }
+        .group:hover .shake {
+            animation: shake 0.2s infinite;
         }
-
-        // Event listeners
-        totalInput.addEventListener('input', calculateIGVFromTotal);
-        subtotalInput.addEventListener('input', calculateIGVFromSubtotal);
-    });
-</script>
+    </style>
 @endsection

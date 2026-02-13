@@ -35,4 +35,9 @@ class Document extends Model
     {
         return $this->belongsTo(SunatDocumentType::class, 'sunat_type_id');
     }
+
+    public function items()
+    {
+        return $this->hasMany(DocumentItem::class);
+    }
 }

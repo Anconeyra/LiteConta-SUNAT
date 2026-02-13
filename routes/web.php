@@ -30,6 +30,14 @@ Route::redirect('/', '/login');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    Route::get('/reports/accountant/csv', [AccountantReportController::class, 'exportCsv'])->name('reports.accountant.download.csv');
+
+    Route::get('/sales/next-number/{typeId}', [SalesController::class, 'getNextNumber'])->name('sales.next_number');
+    Route::get('/purchases/next-number/{typeId}', [PurchaseController::class, 'getNextNumber'])->name('purchases.next_number');
+    Route::post('/purchases/upload-xml', [PurchaseController::class, 'uploadXml'])->name('purchases.upload_xml');
+
+    Route::post('/ventas/upload-xml', [App\Http\Controllers\SalesController::class, 'uploadXml'])->name('sales.upload_xml');
+
     // Dashboard Principal
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -68,8 +76,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // --- MÓDULO DE ALERTAS DE CUMPLIMIENTO ---
-    // Resource route for compliance alerts (English)
-    Route::resource('compliance-alerts', AlertasController::class);
+    Route::resource('compliance-alerts', AlertasController::class)
+        ->parameters(['compliance-alerts' => 'alert']);
 
     // Redirect Spanish URLs to the English resource routes
     Route::get('/alertas-de-cumplimiento', function () {
@@ -113,4 +121,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
