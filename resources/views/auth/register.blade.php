@@ -1,10 +1,13 @@
 <x-guest-layout>
     <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-2xl mb-4 shadow-lg border-b-4 border-green-500">
-            <i class="fas fa-building text-white text-2xl"></i>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-2xl mb-4 shadow-xl border-b-4 border-green-500 transition-transform hover:scale-105 duration-300">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
         </div>
+        
         <h2 class="text-2xl font-black text-slate-800 tracking-tight">Registro de Empresa</h2>
-        <p class="text-slate-500 text-sm mt-1 font-medium">Configura tu cuenta de <span class="italic">Lite<span class="text-green-500 font-bold">Conta</span></span></p>
+        <p class="text-slate-500 text-sm mt-1 font-medium">Configura tu cuenta de <span class="italic text-slate-900">Lite<span class="text-green-500 font-bold">Conta</span></span></p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
@@ -22,7 +25,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fas fa-user text-sm"></i>
                     </div>
-                    <x-text-input id="name" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all" type="text" name="name" :value="old('name')" required autofocus placeholder="Nombre completo" />
+                    <x-text-input id="name" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" type="text" name="name" :value="old('name')" required autofocus placeholder="Nombre completo" />
                 </div>
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
@@ -33,7 +36,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fas fa-envelope text-sm"></i>
                     </div>
-                    <x-text-input id="email" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all" type="email" name="email" :value="old('email')" required placeholder="correo@ejemplo.com" />
+                    <x-text-input id="email" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" type="email" name="email" :value="old('email')" required placeholder="correo@ejemplo.com" />
                 </div>
                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
             </div>
@@ -51,7 +54,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fas fa-id-card text-sm"></i>
                     </div>
-                    <x-text-input id="ruc" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all font-mono" type="text" name="ruc" :value="old('ruc')" required placeholder="11 dígitos" maxlength="11" />
+                    <x-text-input id="ruc" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all font-mono shadow-sm" type="text" name="ruc" :value="old('ruc')" required placeholder="11 dígitos" maxlength="11" />
                 </div>
                 <x-input-error :messages="$errors->get('ruc')" class="mt-2" />
             </div>
@@ -62,7 +65,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fas fa-briefcase text-sm"></i>
                     </div>
-                    <x-text-input id="razon_social" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all" type="text" name="razon_social" :value="old('razon_social')" required placeholder="Nombre legal de la empresa" />
+                    <x-text-input id="razon_social" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" type="text" name="razon_social" :value="old('razon_social')" required placeholder="Nombre legal de la empresa" />
                 </div>
                 <x-input-error :messages="$errors->get('razon_social')" class="mt-2" />
             </div>
@@ -81,7 +84,7 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                             <i class="fas fa-lock text-sm"></i>
                         </div>
-                        <x-text-input id="password" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all" type="password" name="password" required placeholder="••••••••" />
+                        <x-text-input id="password" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" type="password" name="password" required placeholder="••••••••" />
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
@@ -92,7 +95,7 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                             <i class="fas fa-check-double text-sm"></i>
                         </div>
-                        <x-text-input id="password_confirmation" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all" type="password" name="password_confirmation" required placeholder="••••••••" />
+                        <x-text-input id="password_confirmation" class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" type="password" name="password_confirmation" required placeholder="••••••••" />
                     </div>
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                 </div>
@@ -100,11 +103,11 @@
         </div>
 
         <div class="flex items-center justify-between mt-8 pt-4 border-t border-slate-100">
-            <a class="text-sm font-bold text-slate-500 hover:text-slate-800 transition" href="{{ route('login') }}">
+            <a class="text-sm font-bold text-slate-500 hover:text-green-600 transition" href="{{ route('login') }}">
                 {{ __('¿Ya tienes cuenta?') }}
             </a>
 
-            <x-primary-button class="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-xl shadow-slate-200 transition-all active:scale-95 border-none">
+            <x-primary-button class="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-900/10 transition-all active:scale-95 border-none uppercase tracking-wider">
                 {{ __('Finalizar Registro') }}
             </x-primary-button>
         </div>

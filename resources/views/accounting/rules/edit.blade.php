@@ -1,19 +1,27 @@
 @extends('layouts.app')
 
-@section('header_title', 'Editar Regla de Clasificación')
+@section('header_title', 'Editar Automatización')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-4xl mx-auto px-4 pb-12">
+    <div class="mb-8 bg-gradient-to-r from-amber-500 to-amber-600 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
+        <div class="relative z-10">
+            <h3 class="text-xl font-bold mb-1">Ajustar Regla Inteligente</h3>
+            <p class="text-amber-50 text-sm opacity-90">Modifica los criterios de clasificación para que el sistema sea más preciso.</p>
+        </div>
+        <i class="fas fa-tools absolute -right-4 -bottom-4 text-8xl text-white/10 rotate-12"></i>
+    </div>
+
     <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <form action="{{ route('accounting.rules.update', $rule) }}" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
-                        <x-input-label for="partner_id" value="Proveedor/Cliente (Opcional)" class="font-bold text-xs uppercase text-slate-400 mb-2" />
-                        <select name="partner_id" class="w-full border-gray-200 rounded-xl focus:ring-green-500">
+                        <x-input-label for="partner_id" value="Proveedor o Cliente" class="font-bold text-xs text-slate-500 mb-2" />
+                        <select name="partner_id" class="w-full border-slate-200 rounded-xl focus:ring-amber-500 py-3 text-sm">
                             <option value="">Aplica a todos</option>
                             @foreach($partners as $partner)
                                 <option value="{{ $partner->id }}" {{ $rule->partner_id == $partner->id ? 'selected' : '' }}>
@@ -21,40 +29,33 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="text-[10px] text-slate-400 mt-1">Si seleccionas un proveedor/cliente específico, la regla aplicará solo a él</p>
                     </div>
 
                     <div>
-                        <x-input-label for="keyword" value="Palabra Clave (Opcional)" class="font-bold text-xs uppercase text-slate-400 mb-2" />
-                        <x-text-input id="keyword" name="keyword" type="text" class="w-full rounded-xl" 
-                                      value="{{ old('keyword', $rule->keyword) }}" 
-                                      placeholder="Ej: SODIMAC, MOVISTAR, etc." />
-                        <p class="text-[10px] text-slate-400 mt-1">Si se encuentra esta palabra en el nombre del proveedor, se aplica la regla</p>
+                        <x-input-label for="keyword" value="Palabra Clave en el Nombre" class="font-bold text-xs text-slate-500 mb-2" />
+                        <x-text-input id="keyword" name="keyword" type="text" class="w-full rounded-xl py-3 text-sm" 
+                            value="{{ old('keyword', $rule->keyword) }}" placeholder="Ej: TELEFONICA" />
                     </div>
                 </div>
 
-                <div>
-                    <x-input-label for="suggested_category_id" value="Categoría Asignada" class="font-bold text-xs uppercase text-slate-400 mb-2" />
-                    <select name="suggested_category_id" class="w-full border-gray-200 rounded-xl focus:ring-green-500" required>
+                <div class="p-6 bg-amber-50/30 rounded-2xl border border-amber-100">
+                    <x-input-label for="suggested_category_id" value="Categoría que se asignará" class="font-bold text-xs text-slate-500 mb-2" />
+                    <select name="suggested_category_id" class="w-full border-amber-200 rounded-xl focus:ring-amber-500 py-3 font-bold text-slate-800" required>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ $rule->suggested_category_id == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }} ({{ $category->type == 'income' ? 'Ingreso' : 'Gasto' }})
+                                {{ $category->type == 'income' ? '🟢' : '🔴' }} {{ $category->name }} ({{ $category->accounting_code }})
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-[10px] text-slate-400 mt-1">Esta categoría se asignará automáticamente cuando se cumpla la condición</p>
                 </div>
 
-                <div class="pt-6">
-                    <button type="submit" class="w-full bg-green-500 text-slate-900 font-bold py-4 rounded-2xl hover:bg-green-400 transition shadow-lg shadow-green-100">
-                        Actualizar Regla de Clasificación
-                    </button>
-                </div>
-
-                <div class="pt-2">
-                    <a href="{{ route('accounting.rules.index') }}" class="w-full bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-300 transition text-center block">
-                        Cancelar
+                <div class="flex flex-col md:flex-row gap-4 pt-4">
+                    <a href="{{ route('accounting.rules.index') }}" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-200 transition text-center order-2 md:order-1">
+                        Descartar cambios
                     </a>
+                    <button type="submit" class="flex-[2] bg-amber-600 text-white font-bold py-4 rounded-2xl hover:bg-amber-700 transition shadow-xl shadow-amber-200 order-1 md:order-2">
+                        <i class="fas fa-save mr-2"></i> Guardar Cambios en la Regla
+                    </button>
                 </div>
             </div>
         </form>

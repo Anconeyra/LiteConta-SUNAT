@@ -1,10 +1,15 @@
 <x-guest-layout>
     <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-2xl mb-4 shadow-lg border-b-4 border-green-500">
-            <i class="fas fa-shield-alt text-white text-2xl"></i>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-2xl mb-4 shadow-xl border-b-4 border-green-500 transition-transform hover:scale-105 duration-300">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
         </div>
-        <h2 class="text-2xl font-black text-slate-800 tracking-tight">¡ Bienvenido a <span class="italic text-slate-900">Lite<span class="text-green-500">Conta</span></span> !</h2>
-        <p class="text-slate-500 text-sm mt-1 font-medium">Ingresa tus credenciales para gestionar tu MYPE</p>
+        
+        <h2 class="text-2xl font-black text-slate-800 tracking-tight">
+            ¡Bienvenido a <span class="italic text-slate-900">Lite<span class="text-green-500">Conta</span></span>!
+        </h2>
+        <p class="text-slate-500 text-sm mt-1 font-medium">Gestión contable ágil para tu MYPE</p>
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -19,7 +24,7 @@
                     <i class="fas fa-envelope text-sm"></i>
                 </div>
                 <x-text-input id="email" 
-                    class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all duration-200" 
+                    class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm" 
                     type="email" name="email" :value="old('email')" 
                     required autofocus autocomplete="username" 
                     placeholder="correo@ejemplo.com" />
@@ -31,7 +36,7 @@
             <div class="flex justify-between items-center ml-1">
                 <x-input-label for="password" :value="__('Contraseña')" class="text-xs font-bold uppercase text-slate-500" />
                 @if (Route::has('password.request'))
-                    <a class="text-xs font-bold text-blue-600 hover:text-blue-800 transition" href="{{ route('password.request') }}">
+                    <a class="text-xs font-bold text-green-600 hover:text-green-700 transition" href="{{ route('password.request') }}">
                         {{ __('¿Olvidaste tu clave?') }}
                     </a>
                 @endif
@@ -41,7 +46,7 @@
                     <i class="fas fa-lock text-sm"></i>
                 </div>
                 <x-text-input id="password" 
-                    class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    class="block w-full pl-10 border-slate-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm"
                     type="password"
                     name="password"
                     required autocomplete="current-password"
@@ -53,20 +58,20 @@
         <div class="flex items-center justify-between">
             <label for="remember_me" class="inline-flex items-center cursor-pointer group">
                 <input id="remember_me" type="checkbox" class="rounded border-slate-300 text-green-500 shadow-sm focus:ring-green-500 transition" name="remember">
-                <span class="ms-2 text-sm text-slate-600 group-hover:text-slate-900 transition">{{ __('Recordarme en este equipo') }}</span>
+                <span class="ms-2 text-sm text-slate-600 group-hover:text-slate-900 transition">{{ __('Recordarme') }}</span>
             </label>
         </div>
 
         <div class="pt-2">
-            <x-primary-button class="w-full justify-center py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-xl shadow-slate-200 transition-all active:scale-95 uppercase tracking-widest border-none">
-                {{ __('Iniciar Sesión') }}
+            <x-primary-button class="w-full justify-center py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-900/10 transition-all active:scale-95 uppercase tracking-widest border-none">
+                {{ __('Entrar al Sistema') }}
             </x-primary-button>
         </div>
 
         <div class="text-center pt-4 border-t border-slate-100">
             <p class="text-sm text-slate-500">
-                ¿Aún no tienes cuenta? 
-                <a href="{{ route('register') }}" class="font-bold text-green-600 hover:text-green-700 transition">Regístrate aquí</a>
+                ¿Nuevo en LiteConta? 
+                <a href="{{ route('register') }}" class="font-bold text-green-600 hover:text-green-700 transition">Crea una cuenta</a>
             </p>
         </div>
     </form>
