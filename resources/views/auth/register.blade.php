@@ -1,9 +1,9 @@
 <x-guest-layout>
     <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-2xl mb-4 shadow-xl border-b-4 border-green-500 transition-transform hover:scale-105 duration-300">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-            </svg>
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4 shadow-xl border-b-4 border-green-500 transition-transform hover:scale-105 duration-300 overflow-hidden" style="background-color: #0d121b;">
+            <img src="{{ asset('images/logo.png') }}" 
+                 alt="Logo" 
+                 class="w-full h-full object-cover"> 
         </div>
         
         <h2 class="text-2xl font-black text-slate-800 tracking-tight">Registro de Empresa</h2>
