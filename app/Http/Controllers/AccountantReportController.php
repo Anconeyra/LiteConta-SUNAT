@@ -14,17 +14,23 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AccountantReportController extends Controller
 {
     /**
-     * Muestra la vista inicial del reporte con datos de los últimos 3 meses.
+     * Muestra la vista del reporte. 
+     * Si se pasan fechas por el Request, las usa; de lo contrario, usa los últimos 3 meses.
      */
-    public function index()
+    public function index(Request $request)
     {
         $companyId = Auth::user()->company_id;
 
-        // Obtener fechas para el filtro (últimos 3 meses por defecto)
-        $endDate = Carbon::now();
-        $startDate = Carbon::now()->subMonths(3);
+        // Si vienen por URL (request) úsalas, si no, usa el default
+        $startDate = $request->has('start_date') 
+            ? Carbon::parse($request->start_date)->startOfDay() 
+            : Carbon::now()->subMonths(3)->startOfDay();
+            
+        $endDate = $request->has('end_date') 
+            ? Carbon::parse($request->end_date)->endOfDay() 
+            : Carbon::now()->endOfDay();
 
-        // Obtener documentos para el rango de fechas
+        // Obtener documentos para el rango de fechas (Ventas)
         $ventas = Document::where('company_id', $companyId)
             ->where('operation_type', 'sale')
             ->whereBetween('issue_date', [$startDate, $endDate])
@@ -32,6 +38,7 @@ class AccountantReportController extends Controller
             ->orderBy('issue_date', 'asc')
             ->get();
 
+        // Obtener documentos para el rango de fechas (Compras)
         $compras = Document::where('company_id', $companyId)
             ->where('operation_type', 'purchase')
             ->whereBetween('issue_date', [$startDate, $endDate])
@@ -58,7 +65,7 @@ class AccountantReportController extends Controller
     }
 
     /**
-     * Genera la vista filtrada por fechas desde el formulario.
+     * Genera la vista filtrada (mantiene consistencia con index).
      */
     public function generate(Request $request)
     {
@@ -67,41 +74,8 @@ class AccountantReportController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        $companyId = Auth::user()->company_id;
-        $startDate = Carbon::parse($request->start_date);
-        $endDate = Carbon::parse($request->end_date);
-
-        // Obtener documentos para el rango de fechas
-        $ventas = Document::where('company_id', $companyId)
-            ->where('operation_type', 'sale')
-            ->whereBetween('issue_date', [$startDate, $endDate])
-            ->with(['partner', 'category', 'sunatType'])
-            ->orderBy('issue_date', 'asc')
-            ->get();
-
-        $compras = Document::where('company_id', $companyId)
-            ->where('operation_type', 'purchase')
-            ->whereBetween('issue_date', [$startDate, $endDate])
-            ->with(['partner', 'category', 'sunatType'])
-            ->orderBy('issue_date', 'asc')
-            ->get();
-
-        // Calcular totales
-        $totalVentas = $ventas->sum('total');
-        $totalCompras = $compras->sum('total');
-        $totalIgvVentas = $ventas->sum('igv');
-        $totalIgvCompras = $compras->sum('igv');
-
-        return view('reports.accountant', compact(
-            'ventas',
-            'compras',
-            'totalVentas',
-            'totalCompras',
-            'totalIgvVentas',
-            'totalIgvCompras',
-            'startDate',
-            'endDate'
-        ));
+        // Simplemente llamamos a index para no duplicar lógica
+        return $this->index($request);
     }
 
     /**
@@ -115,8 +89,8 @@ class AccountantReportController extends Controller
         ]);
 
         $companyId = Auth::user()->company_id;
-        $startDate = Carbon::parse($request->get('start_date'));
-        $endDate = Carbon::parse($request->get('end_date'));
+        $startDate = Carbon::parse($request->get('start_date'))->startOfDay();
+        $endDate = Carbon::parse($request->get('end_date'))->endOfDay();
 
         $ventas = Document::where('company_id', $companyId)
             ->where('operation_type', 'sale')
@@ -166,8 +140,8 @@ class AccountantReportController extends Controller
         ]);
 
         $companyId = Auth::user()->company_id;
-        $startDate = Carbon::parse($request->start_date);
-        $endDate = Carbon::parse($request->end_date);
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
         $type = $request->type;
 
         $documents = Document::where('company_id', $companyId)
@@ -193,25 +167,14 @@ class AccountantReportController extends Controller
             // BOM para UTF-8
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // 1. Escribir los encabezados (14 columnas, separadas por punto y coma)
+            // Encabezados
             fputcsv($file, [
-                'Fecha',
-                'Tipo CP',
-                'Serie',
-                'Numero',
-                'Doc Tipo',
-                'Doc Numero',
-                'Denominacion',
-                'Moneda',
-                'Tipo Cambio',
-                'Base Gravada',
-                'Exonerada',
-                'IGV',
-                'Total',
-                'Glosa'
+                'Fecha', 'Tipo CP', 'Serie', 'Numero', 'Doc Tipo', 'Doc Numero', 
+                'Denominacion', 'Moneda', 'Tipo Cambio', 'Base Gravada', 
+                'Exonerada', 'IGV', 'Total', 'Glosa'
             ], ';');
 
-            // 2. Escribir los datos
+            // Datos
             foreach ($documents as $doc) {
                 $date = $doc->issue_date instanceof \Carbon\Carbon
                     ? $doc->issue_date
@@ -221,7 +184,6 @@ class AccountantReportController extends Controller
                 $igv = (float) $doc->igv;
                 $base = $total - $igv;
 
-                // Lógica de Gravada vs Exonerada
                 $montoGravado = ($igv > 0) ? number_format($base, 2, '.', '') : '0.00';
                 $montoExonerado = ($igv <= 0) ? number_format($base, 2, '.', '') : '0.00';
 
