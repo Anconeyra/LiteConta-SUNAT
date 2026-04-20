@@ -155,8 +155,7 @@ Configura tu servidor web (Nginx / Apache) para que apunte a la carpeta `public/
 ## 📝 Licencia
 
 Este proyecto está licenciado bajo la MIT License – ver el archivo LICENSE para más detalles.  
-© 2026 Frank Hernán Anconeyra Suyo  
-Proyecto académico para optar al Título Profesional en Diseño y Desarrollo de Software – TECSUP
+© 2026 Nyraroot dev
 
 ---
 
